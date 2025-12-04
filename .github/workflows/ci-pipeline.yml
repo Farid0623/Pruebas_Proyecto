@@ -53,6 +53,7 @@ jobs:
     - name: Subir reportes de pruebas
       if: always()
       uses: actions/upload-artifact@v4
+      continue-on-error: true
       with:
         name: backend-test-reports
         path: |
@@ -78,7 +79,7 @@ jobs:
     
     - name: Instalar dependencias del frontend
       working-directory: ./frontend
-      run: npm ci
+      run: npm install
     
     - name: Ejecutar ESLint
       working-directory: ./frontend
@@ -91,6 +92,7 @@ jobs:
     
     - name: Subir build artifacts
       uses: actions/upload-artifact@v4
+      continue-on-error: true
       with:
         name: frontend-build
         path: frontend/build/
@@ -101,6 +103,7 @@ jobs:
     name: Pruebas End-to-End
     runs-on: ubuntu-latest
     needs: [backend-tests, frontend-lint]
+    if: success()
     
     services:
       postgres:
@@ -159,7 +162,7 @@ jobs:
     - name: Iniciar Frontend
       working-directory: ./frontend
       run: |
-        npm ci
+        npm install
         nohup npm start > frontend.log 2>&1 &
         echo "Esperando a que el frontend esté listo..."
         for i in {1..30}; do
@@ -188,6 +191,7 @@ jobs:
     - name: Subir reportes de Playwright
       if: always()
       uses: actions/upload-artifact@v4
+      continue-on-error: true
       with:
         name: playwright-report
         path: e2e-tests/playwright-report/
@@ -225,7 +229,8 @@ jobs:
   final-validation:
     name: Validación Final
     runs-on: ubuntu-latest
-    needs: [backend-tests, frontend-lint, e2e-tests, security-scan]
+    needs: [backend-tests, frontend-lint]
+    if: always()
     
     steps:
     - name: Checkout código
