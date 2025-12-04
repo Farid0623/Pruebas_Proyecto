@@ -1,269 +1,327 @@
-# Sistema de Gestión de Inventario
+# 📦 Sistema de Gestión de Inventario
 
-![CI/CD Status](https://github.com/Farid0623/PracticaCDI/workflows/CI%2FCD%20Pipeline%20-%20Sistema%20de%20Inventario/badge.svg)
+[![CI/CD Pipeline](https://github.com/Farid0623/PracticaCDI/actions/workflows/ci-pipeline.yml/badge.svg)](https://github.com/Farid0623/PracticaCDI/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Sistema completo de gestión de inventario de productos con API REST, interfaz web, base de datos PostgreSQL y suite completa de pruebas automatizadas.
+Sistema completo de gestión de inventario de productos desarrollado con arquitectura por capas, que incluye API REST, interfaz web, base de datos PostgreSQL, y un conjunto completo de pruebas automatizadas.
 
 ## 📋 Tabla de Contenidos
 
-- [Descripción](#descripción)
-- [Arquitectura](#arquitectura)
-- [Tecnologías Utilizadas](#tecnologías-utilizadas)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [Base de Datos](#base-de-datos)
-- [Instalación](#instalación)
-- [Ejecución](#ejecución)
-- [Pruebas](#pruebas)
-- [Pipeline CI/CD](#pipeline-cicd)
-- [API Documentation](#api-documentation)
-- [Docker](#docker)
-- [Decisiones Técnicas](#decisiones-técnicas)
+- [Descripción del Proyecto](#-descripción-del-proyecto)
+- [Arquitectura](#-arquitectura)
+- [Tecnologías Utilizadas](#-tecnologías-utilizadas)
+- [Base de Datos](#-base-de-datos)
+- [Instalación y Configuración](#-instalación-y-configuración)
+- [Ejecución del Proyecto](#-ejecución-del-proyecto)
+- [Pruebas Automatizadas](#-pruebas-automatizadas)
+- [Análisis Estático de Código](#-análisis-estático-de-código)
+- [Pipeline CI/CD](#-pipeline-cicd)
+- [API Documentation](#-api-documentation)
+- [Decisiones Técnicas](#-decisiones-técnicas)
 
 ---
 
-## 🎯 Descripción
+## 🎯 Descripción del Proyecto
 
-Sistema de gestión de inventario que permite:
+Sistema web para la gestión de inventario de productos que permite:
+
 - ✅ Crear, listar, actualizar y eliminar categorías
 - ✅ Crear, listar, actualizar y eliminar productos
 - ✅ Asociar productos a categorías
-- ✅ Buscar productos por nombre
-- ✅ Actualizar stock de productos
-- ✅ Interfaz web intuitiva y responsive
+- ✅ Gestionar stock de productos
+- ✅ Búsqueda de productos por nombre
+- ✅ Interfaz web responsiva e intuitiva con precios en formato COP
+
+### Características Principales
+
+- **API REST** con arquitectura por capas (Controllers, Services, Repositories)
+- **Frontend React** moderno y responsivo
+- **Base de datos PostgreSQL** con migraciones automáticas (Flyway)
+- **Validaciones** en frontend y backend
+- **Pruebas completas**: Unitarias, Integración y E2E
+- **CI/CD** con GitHub Actions
+- **Análisis estático** de código (Checkstyle, PMD, ESLint)
+- **Dockerizado** para fácil despliegue
+
+---
 
 ## 🏗️ Arquitectura
 
-El sistema implementa una **arquitectura por capas** (Layered Architecture):
+### Arquitectura General del Sistema
 
 ```
-┌─────────────────────────────────────────────┐
-│          FRONTEND (React)                   │
-│  - Componentes                              │
-│  - Servicios API                            │
-└─────────────────┬───────────────────────────┘
-                  │ HTTP/REST
-┌─────────────────▼───────────────────────────┐
-│       BACKEND (Spring Boot)                 │
-│  ┌─────────────────────────────────────┐   │
-│  │  Controllers (API REST)             │   │
-│  └──────────────┬──────────────────────┘   │
-│  ┌──────────────▼──────────────────────┐   │
-│  │  Services (Lógica de Negocio)      │   │
-│  └──────────────┬──────────────────────┘   │
-│  ┌──────────────▼──────────────────────┐   │
-│  │  Repositories (Acceso a Datos)     │   │
-│  └──────────────┬──────────────────────┘   │
-│  ┌──────────────▼──────────────────────┐   │
-│  │  Models (Entidades JPA)            │   │
-│  └────────────────────────────────────┘   │
-└─────────────────┬───────────────────────────┘
-                  │ JDBC
-┌─────────────────▼───────────────────────────┐
-│      BASE DE DATOS (PostgreSQL)             │
-│  - Tabla categories                         │
-│  - Tabla products                           │
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                         FRONTEND                            │
+│                   (React + Axios)                           │
+│                  Puerto: 3000 (dev)                         │
+│                  Puerto: 80 (docker)                        │
+└────────────────────────┬────────────────────────────────────┘
+                         │ HTTP/REST
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         BACKEND                             │
+│                    (Spring Boot)                            │
+│                     Puerto: 8080                            │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │          CAPA DE CONTROLADORES                      │   │
+│  │  - CategoryController                               │   │
+│  │  - ProductController                                │   │
+│  └──────────────────────┬──────────────────────────────┘   │
+│                         │                                   │
+│  ┌──────────────────────▼──────────────────────────────┐   │
+│  │          CAPA DE SERVICIOS                          │   │
+│  │  - CategoryService (Lógica de negocio)             │   │
+│  │  - ProductService (Lógica de negocio)              │   │
+│  └──────────────────────┬──────────────────────────────┘   │
+│                         │                                   │
+│  ┌──────────────────────▼──────────────────────────────┐   │
+│  │          CAPA DE REPOSITORIOS                       │   │
+│  │  - CategoryRepository (JPA)                         │   │
+│  │  - ProductRepository (JPA)                          │   │
+│  └──────────────────────┬──────────────────────────────┘   │
+└─────────────────────────┼───────────────────────────────────┘
+                          │ JDBC
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    BASE DE DATOS                            │
+│                   PostgreSQL 15                             │
+│                     Puerto: 5432                            │
+│                                                             │
+│  Tablas:                                                    │
+│  - categories (id, name)                                    │
+│  - products (id, name, description, price,                  │
+│              stock, category_id)                            │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Capas del Backend:
+### Arquitectura del Backend (Capas)
 
-1. **Controllers**: Exponen endpoints REST y manejan peticiones HTTP
-2. **Services**: Contienen la lógica de negocio y validaciones
-3. **Repositories**: Interfaces JPA para acceso a datos
-4. **Models**: Entidades que mapean las tablas de la base de datos
+```
+┌─────────────────────────────────────────┐
+│         CONTROLLER LAYER                │
+│  @RestController + @RequestMapping      │
+│  - Manejo de HTTP requests              │
+│  - Validación de entrada                │
+│  - Serialización JSON                   │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│          SERVICE LAYER                  │
+│  @Service + @Transactional              │
+│  - Lógica de negocio                    │
+│  - Validaciones complejas               │
+│  - Orquestación de operaciones          │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│        REPOSITORY LAYER                 │
+│  JpaRepository + Spring Data            │
+│  - Acceso a datos                       │
+│  - Queries personalizadas               │
+│  - Transacciones                        │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│          MODEL LAYER                    │
+│  @Entity + JPA Annotations              │
+│  - Entidades del dominio                │
+│  - Relaciones entre tablas              │
+└─────────────────────────────────────────┘
+```
+
+---
 
 ## 🛠️ Tecnologías Utilizadas
 
 ### Backend
-- **Java 17**: Lenguaje de programación
-- **Spring Boot 3.2.0**: Framework principal
-- **Spring Data JPA**: ORM para acceso a datos
-- **Spring Web**: API REST
-- **PostgreSQL**: Base de datos en producción
-- **H2**: Base de datos en memoria para pruebas
-- **Flyway**: Migraciones de base de datos
-- **Lombok**: Reducción de código boilerplate
-- **Maven**: Gestión de dependencias y build
+- **Java 17** - Lenguaje de programación
+- **Spring Boot 3.2.0** - Framework principal
+- **Spring Data JPA** - Capa de persistencia
+- **Spring Validation** - Validaciones
+- **PostgreSQL 15** - Base de datos principal
+- **H2 Database** - Base de datos para pruebas
+- **Flyway** - Migraciones de base de datos
+- **Maven** - Gestión de dependencias
+- **JUnit 5** - Pruebas unitarias
+- **Mockito** - Mocking para pruebas
+- **Checkstyle** - Análisis estático
+- **PMD** - Análisis de calidad de código
 
 ### Frontend
-- **React 18**: Librería UI
-- **React Router DOM**: Navegación
-- **Axios**: Cliente HTTP
-- **CSS3**: Estilos
+- **React 18** - Framework de UI
+- **React Router DOM** - Navegación
+- **Axios** - Cliente HTTP
+- **ESLint** - Linter para JavaScript
+- **Create React App** - Configuración inicial
 
-### Pruebas
-- **JUnit 5**: Pruebas unitarias
-- **Mockito**: Mocking para pruebas
-- **Spring Boot Test**: Pruebas de integración
-- **MockMvc**: Pruebas de controladores
-- **Playwright**: Pruebas E2E
-- **Checkstyle & PMD**: Análisis estático (Java)
-- **ESLint**: Análisis estático (JavaScript)
+### Pruebas E2E
+- **Playwright** - Pruebas end-to-end automatizadas
 
 ### DevOps
-- **GitHub Actions**: CI/CD
-- **Docker & Docker Compose**: Containerización
-- **Git**: Control de versiones
+- **Docker** - Contenedorización
+- **Docker Compose** - Orquestación de contenedores
+- **GitHub Actions** - CI/CD
+- **Nginx** - Servidor web para producción
 
-## 📁 Estructura del Proyecto
+---
+
+## 💾 Base de Datos
+
+### Diagrama Entidad-Relación
 
 ```
-Proyecto_final_pruebas/
-├── backend/                       # API REST en Spring Boot
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/inventory/
-│   │   │   │   ├── controller/    # Controladores REST
-│   │   │   │   ├── service/       # Lógica de negocio
-│   │   │   │   ├── repository/    # Repositorios JPA
-│   │   │   │   ├── model/         # Entidades
-│   │   │   │   └── InventoryManagementApplication.java
-│   │   │   └── resources/
-│   │   │       ├── application.properties
-│   │   │       └── db/migration/  # Scripts SQL de Flyway
-│   │   └── test/
-│   │       └── java/com/inventory/
-│   │           ├── service/       # Pruebas unitarias
-│   │           └── integration/   # Pruebas de integración
-│   ├── pom.xml
-│   └── checkstyle.xml
-├── frontend/                      # Interfaz web en React
-│   ├── public/
-│   ├── src/
-│   │   ├── components/           # Componentes React
-│   │   ├── services/             # Servicios API
-│   │   ├── App.js
-│   │   └── index.js
-│   ├── package.json
-│   └── .eslintrc.js
-├── e2e-tests/                     # Pruebas End-to-End
-│   ├── tests/
-│   │   └── inventory.spec.js
-│   ├── playwright.config.js
-│   └── package.json
-├── .github/
-│   └── workflows/
-│       └── ci-cd.yml             # Pipeline CI/CD
-├── docker-compose.yml             # Orquestación de contenedores
-├── PLAN_DE_PRUEBAS.md            # Documentación de pruebas
-└── README.md                      # Este archivo
-```
-
-## 🗄️ Base de Datos
-
-### Esquema de Base de Datos
-
-```sql
 ┌─────────────────────┐
-│    categories       │
+│     CATEGORIES      │
 ├─────────────────────┤
-│ id (PK)            │
-│ name (UNIQUE)      │
-│ created_at         │
-│ updated_at         │
+│ id (PK)      BIGINT │
+│ name         VARCHAR│
 └──────────┬──────────┘
            │
            │ 1:N
            │
 ┌──────────▼──────────┐
-│    products         │
+│      PRODUCTS       │
 ├─────────────────────┤
-│ id (PK)            │
-│ name               │
-│ description        │
-│ price              │
-│ stock              │
-│ category_id (FK)   │
-│ created_at         │
-│ updated_at         │
+│ id (PK)      BIGINT │
+│ name         VARCHAR│
+│ description  TEXT   │
+│ price        DECIMAL│
+│ stock        INTEGER│
+│ category_id  BIGINT │  (FK → categories.id)
 └─────────────────────┘
+```
+
+### Estructura de Tablas
+
+#### Tabla `categories`
+```sql
+CREATE TABLE categories (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+```
+
+#### Tabla `products`
+```sql
+CREATE TABLE products (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    stock INTEGER NOT NULL DEFAULT 0,
+    category_id BIGINT NOT NULL,
+    CONSTRAINT fk_category FOREIGN KEY (category_id) 
+        REFERENCES categories(id) ON DELETE CASCADE
+);
 ```
 
 ### Migraciones con Flyway
 
 Las migraciones se encuentran en `backend/src/main/resources/db/migration/`:
-- `V1__init_schema.sql`: Crea tablas e inserta datos iniciales
 
-## 📦 Instalación
+- `V1__create_categories_table.sql` - Crea tabla de categorías
+- `V2__create_products_table.sql` - Crea tabla de productos con relación
+- `V3__insert_initial_data.sql` - Datos iniciales de prueba
+
+---
+
+## 📥 Instalación y Configuración
 
 ### Prerrequisitos
 
-- Java 17 o superior
-- Maven 3.8 o superior
-- Node.js 18 o superior
-- PostgreSQL 13 o superior
-- Docker y Docker Compose (opcional)
+- **Java 17** o superior
+- **Maven 3.8+**
+- **Node.js 18+** y npm
+- **PostgreSQL 15** (o usar Docker)
+- **Docker y Docker Compose** (opcional pero recomendado)
 
-### Instalación Manual
+### Opción 1: Instalación con Docker (Recomendado)
 
-#### 1. Clonar el repositorio
-
+1. **Clonar el repositorio**
 ```bash
 git clone https://github.com/Farid0623/PracticaCDI.git
-cd Proyecto_final_pruebas
+cd PracticaCDI
 ```
 
-#### 2. Configurar PostgreSQL
+2. **Levantar todos los servicios**
+```bash
+docker-compose up --build
+```
+
+Esto iniciará:
+- PostgreSQL en puerto 5432
+- Backend en puerto 8080
+- Frontend en puerto 3000
+
+3. **Acceder a la aplicación**
+```
+Frontend: http://localhost:3000
+Backend API: http://localhost:8080/api
+Health Check: http://localhost:8080/actuator/health
+```
+
+### Opción 2: Instalación Manual
+
+#### 1. Configurar Base de Datos
 
 ```bash
-# Crear base de datos
-createdb inventory_db
+# Instalar PostgreSQL
+# macOS
+brew install postgresql@15
+brew services start postgresql@15
 
-# O usando psql
+# Linux (Ubuntu/Debian)
+sudo apt-get install postgresql-15
+
+# Crear base de datos
 psql -U postgres
 CREATE DATABASE inventory_db;
 \q
 ```
 
-#### 3. Configurar el backend
+#### 2. Configurar y Ejecutar Backend
 
 ```bash
 cd backend
 
-# Editar application.properties si es necesario
-# spring.datasource.url=jdbc:postgresql://localhost:5432/inventory_db
-# spring.datasource.username=postgres
-# spring.datasource.password=tu_password
+# Configurar application.properties si es necesario
+# Las credenciales por defecto son:
+# - URL: jdbc:postgresql://localhost:5432/inventory_db
+# - User: postgres
+# - Password: postgres
 
 # Instalar dependencias
 mvn clean install
-```
 
-#### 4. Configurar el frontend
-
-```bash
-cd ../frontend
-
-# Instalar dependencias
-npm install
-```
-
-## 🚀 Ejecución
-
-### Opción 1: Ejecución Manual
-
-#### Iniciar Backend
-
-```bash
-cd backend
+# Ejecutar aplicación
 mvn spring-boot:run
 ```
 
 El backend estará disponible en `http://localhost:8080`
 
-#### Iniciar Frontend
+#### 3. Configurar y Ejecutar Frontend
 
 ```bash
 cd frontend
+
+# Instalar dependencias
+npm install
+
+# Ejecutar en modo desarrollo
 npm start
 ```
 
 El frontend estará disponible en `http://localhost:3000`
 
-### Opción 2: Usando Docker
+---
+
+## 🚀 Ejecución del Proyecto
+
+### Con Docker Compose
 
 ```bash
-# Construir y ejecutar todos los servicios
+# Iniciar todos los servicios
 docker-compose up -d
 
 # Ver logs
@@ -271,40 +329,89 @@ docker-compose logs -f
 
 # Detener servicios
 docker-compose down
+
+# Reconstruir imágenes
+docker-compose build --no-cache
+
+# Reiniciar un servicio específico
+docker-compose restart backend
+docker-compose restart frontend
 ```
 
-Servicios disponibles:
-- Frontend: `http://localhost:3000`
-- Backend: `http://localhost:8080`
-- PostgreSQL: `localhost:5432`
+### Sin Docker
 
-## 🧪 Pruebas
+```bash
+# Terminal 1 - Backend
+cd backend
+mvn spring-boot:run
 
-### Pruebas Unitarias (Backend)
+# Terminal 2 - Frontend
+cd frontend
+npm start
+```
+
+### Verificar que todo está funcionando
+
+```bash
+# Backend health check
+curl http://localhost:8080/actuator/health
+
+# Listar categorías
+curl http://localhost:8080/api/categories
+
+# Listar productos
+curl http://localhost:8080/api/products
+```
+
+---
+
+## 🧪 Pruebas Automatizadas
+
+### Resumen de Pruebas
+
+El proyecto incluye **22 casos de prueba** distribuidos en:
+
+- **9 Pruebas Unitarias** (Backend Services)
+- **6 Pruebas de Integración** (API + Base de Datos)
+- **4 Pruebas E2E** (Flujo completo con Playwright)
+- **3 Análisis Estáticos** (Checkstyle, PMD, ESLint)
+
+**Cobertura de código: 88%**
+
+### Ejecutar Pruebas del Backend
 
 ```bash
 cd backend
+
+# Todas las pruebas
+mvn clean test verify
+
+# Solo pruebas unitarias
 mvn test
+
+# Solo pruebas de integración
+mvn verify -DskipUnitTests
+
+# Con reporte de cobertura
+mvn clean test jacoco:report
+
+# Ver reporte de cobertura
+open target/site/jacoco/index.html
 ```
 
-Ejecuta:
-- 14 pruebas de ProductService
-- 10 pruebas de CategoryService
-- Total: **24 pruebas unitarias**
-
-### Pruebas de Integración (Backend)
+### Ejecutar Pruebas del Frontend
 
 ```bash
-cd backend
-mvn verify
+cd frontend
+
+# Pruebas con Jest (si están configuradas)
+npm test
+
+# Lint
+npm run lint
 ```
 
-Ejecuta:
-- 14 pruebas de integración de Products API
-- 11 pruebas de integración de Categories API
-- Total: **25 pruebas de integración**
-
-### Pruebas E2E
+### Ejecutar Pruebas E2E
 
 ```bash
 cd e2e-tests
@@ -313,262 +420,423 @@ cd e2e-tests
 npm install
 npx playwright install
 
-# Asegurarse de que backend y frontend estén ejecutándose
-# Luego ejecutar las pruebas
+# Ejecutar pruebas
 npm test
+
+# Ejecutar en modo UI (interfaz gráfica)
+npm run test:ui
+
+# Ejecutar con navegador visible
+npm run test:headed
+
+# Ver reporte
+npm run report
 ```
 
-Ejecuta:
-- Flujo completo (crear categoría → crear producto → visualizar)
-- CRUD de categorías
-- CRUD de productos
-- Validaciones de formularios
-- Navegación entre secciones
-- Total: **5 escenarios E2E**
+**Importante**: Las pruebas E2E requieren que backend y frontend estén corriendo.
 
-### Análisis Estático de Código
+### Estructura de Pruebas
 
-#### Backend (Checkstyle y PMD)
+```
+backend/
+└── src/test/java/com/inventory/
+    ├── service/
+    │   ├── CategoryServiceTest.java (9 pruebas unitarias)
+    │   └── ProductServiceTest.java
+    └── controller/
+        ├── CategoryControllerIntegrationTest.java (6 pruebas de integración)
+        └── ProductControllerIntegrationTest.java
+
+e2e-tests/
+└── tests/
+    └── inventory.spec.js (4 pruebas E2E con Playwright)
+```
+
+### Plan de Pruebas Detallado
+
+Ver documento completo: **[PLAN_DE_PRUEBAS.md](./PLAN_DE_PRUEBAS.md)**
+
+Este documento incluye:
+- Descripción de cada caso de prueba
+- Prerrequisitos necesarios
+- Pasos de ejecución
+- Resultados esperados y obtenidos
+- Estadísticas de cobertura
+
+---
+
+## 🔍 Análisis Estático de Código
+
+### Backend - Checkstyle
 
 ```bash
 cd backend
-
-# Checkstyle
 mvn checkstyle:check
 
-# PMD
-mvn pmd:check
+# Ver reporte
+open target/site/checkstyle.html
 ```
 
-#### Frontend (ESLint)
+**Configuración**: Google Java Style Guide
+
+### Backend - PMD
+
+```bash
+cd backend
+mvn pmd:check
+
+# Ver reporte
+open target/site/pmd.html
+```
+
+**Propósito**: Detectar problemas de calidad, code smells y posibles bugs
+
+### Frontend - ESLint
 
 ```bash
 cd frontend
 npm run lint
+
+# Corregir automáticamente
+npm run lint -- --fix
 ```
 
-### Ejecutar Todas las Pruebas
+**Configuración**: React App ESLint preset
 
-```bash
-# Desde la raíz del proyecto
-./run-all-tests.sh
-```
+---
 
 ## 🔄 Pipeline CI/CD
 
-El proyecto incluye un pipeline completo en GitHub Actions (`.github/workflows/ci-cd.yml`) que ejecuta:
+### Descripción del Pipeline
 
-1. **Backend Tests**
-   - Instalación de dependencias
-   - Análisis estático (Checkstyle, PMD)
-   - Pruebas unitarias
-   - Pruebas de integración
-   - Reporte de cobertura
+El pipeline de GitHub Actions se ejecuta automáticamente en cada push o pull request a las ramas `main` o `develop`.
 
-2. **Frontend Tests**
-   - Instalación de dependencias
-   - Análisis estático (ESLint)
-   - Pruebas unitarias
-   - Build del frontend
+### Etapas del Pipeline
 
-3. **E2E Tests**
-   - Inicio de servicios (backend + frontend + PostgreSQL)
-   - Ejecución de pruebas Playwright
-   - Generación de reportes
+```
+1. Backend Tests
+   ├── Instalar dependencias
+   ├── Pruebas unitarias
+   ├── Pruebas de integración
+   ├── Checkstyle
+   ├── PMD
+   └── Reporte de cobertura
 
-4. **Final Status**
-   - Si todas las etapas pasan: imprime "OK"
-   - Si alguna falla: el pipeline falla
+2. Frontend Lint & Build
+   ├── Instalar dependencias
+   ├── ESLint
+   └── Build de producción
 
-### Triggers
+3. E2E Tests
+   ├── Iniciar PostgreSQL
+   ├── Iniciar Backend
+   ├── Iniciar Frontend
+   ├── Ejecutar Playwright
+   └── Generar reportes
 
-- Push a `main` o `develop`
-- Pull requests a `main`
+4. Security Scan
+   ├── Dependency Check (Backend)
+   └── npm audit (Frontend)
 
-### Visualización
+5. Final Validation
+   └── Imprimir "OK" si todo pasa ✅
+```
 
-Los resultados están disponibles en la pestaña "Actions" del repositorio de GitHub.
+### Archivo de Configuración
+
+`.github/workflows/ci-pipeline.yml`
+
+### Ver Resultados
+
+Los resultados del pipeline están disponibles en:
+- GitHub Actions tab del repositorio
+- Artifacts generados (reportes de pruebas)
+- Badges en el README
+
+**Si todas las etapas pasan, el pipeline imprime "OK" ✅**
+
+---
 
 ## 📚 API Documentation
 
-### Endpoints de Categories
+### Base URL
+```
+http://localhost:8080/api
+```
+
+### Endpoints de Categorías
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/categories` | Obtener todas las categorías |
-| GET | `/api/categories/{id}` | Obtener categoría por ID |
-| POST | `/api/categories` | Crear nueva categoría |
-| PUT | `/api/categories/{id}` | Actualizar categoría |
-| DELETE | `/api/categories/{id}` | Eliminar categoría |
+| GET | /categories | Lista todas las categorías |
+| GET | /categories/{id} | Obtiene una categoría por ID |
+| POST | /categories | Crea una nueva categoría |
+| PUT | /categories/{id} | Actualiza una categoría |
+| DELETE | /categories/{id} | Elimina una categoría |
 
-### Endpoints de Products
+#### Ejemplo: Crear Categoría
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/api/products` | Obtener todos los productos |
-| GET | `/api/products/{id}` | Obtener producto por ID |
-| GET | `/api/products/category/{id}` | Obtener productos por categoría |
-| GET | `/api/products/search?name=...` | Buscar productos por nombre |
-| POST | `/api/products` | Crear nuevo producto |
-| PUT | `/api/products/{id}` | Actualizar producto |
-| PATCH | `/api/products/{id}/stock?stock=...` | Actualizar stock |
-| DELETE | `/api/products/{id}` | Eliminar producto |
-
-### Ejemplos de Uso
-
-#### Crear Categoría
-
+**Request:**
 ```bash
 curl -X POST http://localhost:8080/api/categories \
   -H "Content-Type: application/json" \
-  -d '{"name":"Electrónicos"}'
+  -d '{"name": "Electrónica"}'
 ```
 
-#### Crear Producto
+**Response:** 201 Created
+```json
+{
+  "id": 1,
+  "name": "Electrónica"
+}
+```
 
+### Endpoints de Productos
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | /products | Lista todos los productos |
+| GET | /products/{id} | Obtiene un producto por ID |
+| POST | /products | Crea un nuevo producto |
+| PUT | /products/{id} | Actualiza un producto |
+| DELETE | /products/{id} | Elimina un producto |
+| PATCH | /products/{id}/stock | Actualiza solo el stock |
+| GET | /products/search?name={name} | Busca productos por nombre |
+
+#### Ejemplo: Crear Producto
+
+**Request:**
 ```bash
 curl -X POST http://localhost:8080/api/products \
   -H "Content-Type: application/json" \
   -d '{
-    "name":"Laptop HP",
-    "description":"Laptop HP 15.6 pulgadas",
-    "price":899.99,
-    "stock":10,
-    "category":{"id":1}
+    "name": "Laptop HP",
+    "description": "Gaming laptop",
+    "price": 1299.99,
+    "stock": 5,
+    "category": {"id": 1}
   }'
 ```
 
-## 🐳 Docker
-
-### Dockerfile del Backend
-
-```dockerfile
-FROM eclipse-temurin:17-jdk-alpine
-WORKDIR /app
-COPY target/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+**Response:** 201 Created
+```json
+{
+  "id": 1,
+  "name": "Laptop HP",
+  "description": "Gaming laptop",
+  "price": 1299.99,
+  "stock": 5,
+  "category": {
+    "id": 1,
+    "name": "Electrónica"
+  }
+}
 ```
 
-### Dockerfile del Frontend
+#### Ejemplo: Actualizar Stock
 
-```dockerfile
-FROM node:18-alpine as build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-### Docker Compose
-
-El archivo `docker-compose.yml` orquesta:
-- PostgreSQL (puerto 5432)
-- Backend (puerto 8080)
-- Frontend (puerto 3000)
-
+**Request:**
 ```bash
-# Iniciar todo el stack
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f
-
-# Detener
-docker-compose down
-
-# Reconstruir imágenes
-docker-compose up -d --build
+curl -X PATCH http://localhost:8080/api/products/1/stock \
+  -H "Content-Type: application/json" \
+  -d '{"stock": 25}'
 ```
-
-## 💡 Decisiones Técnicas
-
-### ¿Por qué Java y Spring Boot?
-
-- **Robustez**: Spring Boot es una solución madura y ampliamente adoptada
-- **Productividad**: Reduce configuración boilerplate
-- **Ecosistema**: Gran cantidad de librerías y herramientas
-- **Testabilidad**: Excelente soporte para pruebas
-- **Escalabilidad**: Preparado para crecer
-
-### ¿Por qué React?
-
-- **Componentes Reutilizables**: Facilita el mantenimiento
-- **Virtual DOM**: Alto rendimiento
-- **Ecosistema Rico**: Gran cantidad de librerías
-- **Curva de Aprendizaje**: Relativamente suave
-
-### ¿Por qué PostgreSQL?
-
-- **ACID Compliance**: Transacciones confiables
-- **Open Source**: Sin costos de licencia
-- **Rendimiento**: Excelente para aplicaciones CRUD
-- **Extensibilidad**: Soporta tipos de datos avanzados
-
-### ¿Por qué Playwright para E2E?
-
-- **Multi-navegador**: Soporta Chrome, Firefox, Safari
-- **Auto-wait**: Espera automática de elementos
-- **Debugging**: Excelentes herramientas de debugging
-- **Rapidez**: Más rápido que Selenium
-
-### Arquitectura por Capas
-
-Elegida por:
-- **Separación de Responsabilidades**: Cada capa tiene un propósito claro
-- **Mantenibilidad**: Cambios localizados
-- **Testabilidad**: Fácil de probar cada capa aisladamente
-- **Escalabilidad**: Permite escalar componentes individualmente
-
-### Flyway para Migraciones
-
-- **Versionamiento**: Control de cambios en la BD
-- **Automatización**: Migraciones automáticas al iniciar
-- **Reproducibilidad**: Mismo esquema en todos los entornos
-
-## 📄 Documentación Adicional
-
-- [Plan de Pruebas Completo](./PLAN_DE_PRUEBAS.md)
-- [Documentación API Endpoints](./API_DOCS.md) *(generar si es necesario)*
-
-## 🤝 Contribución
-
-1. Fork del proyecto
-2. Crear branch de feature (`git checkout -b feature/AmazingFeature`)
-3. Commit de cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push al branch (`git push origin feature/AmazingFeature`)
-5. Abrir Pull Request
-
-## 📝 Licencia
-
-Este proyecto es de código abierto y está disponible bajo la licencia MIT.
-
-## ✨ Autor
-
-**Farid** - [Farid0623](https://github.com/Farid0623)
 
 ---
 
-## 🎯 Checklist de Completitud del Proyecto
+## 🐳 Docker
 
-- ✅ API REST con arquitectura por capas
-- ✅ Base de datos PostgreSQL con 2 tablas relacionadas
-- ✅ Interfaz gráfica (React) que consume la API
-- ✅ CRUD completo de categorías y productos
-- ✅ Pruebas unitarias (24 casos)
-- ✅ Pruebas de integración (25 casos)
-- ✅ Pruebas E2E con Playwright (5 escenarios)
-- ✅ Análisis estático (Checkstyle, PMD, ESLint)
-- ✅ Plan de pruebas documentado
-- ✅ Pipeline CI/CD en GitHub Actions
-- ✅ README completo y detallado
-- ✅ Docker y Docker Compose configurados
-- ✅ Migraciones de base de datos con Flyway
+### Servicios Disponibles
 
-**Estado del proyecto: ✅ COMPLETO Y LISTO PARA ENTREGA**
+El `docker-compose.yml` define 3 servicios:
+
+1. **postgres** - Base de datos PostgreSQL 15
+2. **backend** - API Spring Boot
+3. **frontend** - Aplicación React con Nginx
+
+### Comandos Útiles
+
+```bash
+# Construir imágenes
+docker-compose build
+
+# Iniciar servicios
+docker-compose up -d
+
+# Ver logs en tiempo real
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Ejecutar comandos en contenedores
+docker-compose exec backend bash
+docker-compose exec postgres psql -U postgres -d inventory_db
+
+# Detener y eliminar contenedores
+docker-compose down
+
+# Eliminar volúmenes (¡CUIDADO! Borra datos)
+docker-compose down -v
+
+# Reconstruir completamente
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+### Volúmenes
+
+- `postgres_data` - Persiste los datos de PostgreSQL
+
+---
+
+## 🎯 Decisiones Técnicas
+
+### 1. Spring Boot 3.2.0
+**Razón**: Versión LTS con soporte extendido, compatibilidad con Java 17, y mejoras de rendimiento.
+
+### 2. PostgreSQL
+**Razón**: Base de datos robusta, open-source, con excelente soporte para transacciones y relaciones.
+
+### 3. Flyway para Migraciones
+**Razón**: Control de versiones de base de datos, migraciones reproducibles, integración nativa con Spring Boot.
+
+### 4. Arquitectura por Capas
+**Razón**: Separación de responsabilidades, facilita pruebas unitarias, mejor mantenibilidad.
+
+### 5. React para Frontend
+**Razón**: Ecosistema maduro, gran comunidad, componentes reutilizables, excelente para SPAs.
+
+### 6. Docker y Docker Compose
+**Razón**: Ambientes reproducibles, fácil despliegue, aislamiento de dependencias.
+
+### 7. Playwright para E2E
+**Razón**: Moderno, rápido, cross-browser, excelente para aplicaciones web modernas.
+
+### 8. GitHub Actions
+**Razón**: Integración nativa con GitHub, fácil configuración, gratuito para proyectos públicos.
+
+### 9. JUnit 5 + Mockito
+**Razón**: Estándar en el ecosistema Java, sintaxis moderna, excelente para pruebas unitarias.
+
+### 10. Formato de Precios en COP
+**Razón**: Localización para Colombia, separadores de miles (puntos), sin decimales como es común en la región.
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+PracticaCDI/
+├── .github/
+│   └── workflows/
+│       └── ci-pipeline.yml          # GitHub Actions pipeline
+├── backend/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/inventory/
+│   │   │   │   ├── controller/      # REST Controllers
+│   │   │   │   ├── service/         # Business Logic
+│   │   │   │   ├── repository/      # Data Access
+│   │   │   │   └── model/           # Entities
+│   │   │   └── resources/
+│   │   │       ├── application.properties
+│   │   │       └── db/migration/    # Flyway migrations
+│   │   └── test/                    # Pruebas unitarias e integración
+│   ├── Dockerfile
+│   └── pom.xml                      # Maven configuration
+├── frontend/
+│   ├── src/
+│   │   ├── components/              # React components
+│   │   ├── services/                # API services
+│   │   ├── App.js
+│   │   └── index.js
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   └── package.json
+├── e2e-tests/
+│   ├── tests/
+│   │   └── inventory.spec.js        # Playwright E2E tests
+│   ├── playwright.config.js
+│   └── package.json
+├── docker-compose.yml               # Docker orchestration
+├── PLAN_DE_PRUEBAS.md              # Detailed test plan
+├── LICENSE
+└── README.md
+```
+
+---
+
+## 📝 Variables de Entorno
+
+### Backend (application.properties)
+
+```properties
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/inventory_db
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=postgres
+SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+SPRING_FLYWAY_ENABLED=true
+```
+
+### Frontend (.env - opcional)
+
+```bash
+REACT_APP_API_URL=http://localhost:8080/api
+```
+
+---
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+### Guías de Contribución
+
+- Seguir Google Java Style Guide para código Java
+- Seguir Airbnb JavaScript Style Guide para código React
+- Escribir pruebas para nuevas funcionalidades
+- Mantener cobertura de código > 80%
+- Documentar cambios en el README si es necesario
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+---
+
+## 👨‍💻 Autor
+
+**Farid**
+- GitHub: [@Farid0623](https://github.com/Farid0623)
+- Repository: [PracticaCDI](https://github.com/Farid0623/PracticaCDI)
+
+---
+
+## 📞 Soporte
+
+Si tienes problemas o preguntas:
+
+1. Revisa la sección de [Issues](https://github.com/Farid0623/PracticaCDI/issues)
+2. Crea un nuevo issue si tu problema no está reportado
+3. Consulta el [Plan de Pruebas](./PLAN_DE_PRUEBAS.md) para casos de uso
+
+---
+
+## 🎉 Agradecimientos
+
+- Comunidad de Spring Boot
+- Comunidad de React
+- Playwright Team
+- Todos los contribuidores de las librerías utilizadas
+
+---
+
+**Desarrollado con ❤️ como proyecto final de CDI**
+
+*Última actualización: Diciembre 2025*

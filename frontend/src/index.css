@@ -151,7 +151,7 @@ th, td {
   border-bottom: 1px solid #ddd;
 }
 
-tr:hover {
+tbody tr:hover {
   background-color: #f8f9fa;
 }
 

@@ -2,6 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { productService, categoryService } from '../services/api';
 
 function Products() {
+  // Función para formatear precios en COP
+  const formatCOP = (price) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+
+  // Función para formatear el input con separadores de miles
+  const formatInputCOP = (value) => {
+    if (!value) return '';
+    const number = value.toString().replace(/\D/g, '');
+    return new Intl.NumberFormat('es-CO').format(number);
+  };
+
+  // Función para limpiar el formato y obtener el número
+  const parseInputCOP = (value) => {
+    if (!value) return '';
+    return value.toString().replace(/\D/g, '');
+  };
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +72,7 @@ function Products() {
     try {
       const productData = {
         ...formData,
-        price: parseFloat(formData.price),
+        price: parseFloat(parseInputCOP(formData.price)),
         stock: parseInt(formData.stock),
         category: { id: parseInt(formData.category.id) }
       };
@@ -76,7 +99,7 @@ function Products() {
     setFormData({
       name: product.name,
       description: product.description || '',
-      price: product.price,
+      price: formatInputCOP(product.price),
       stock: product.stock,
       category: { id: product.category.id }
     });
@@ -152,7 +175,7 @@ function Products() {
                     <td>{product.id}</td>
                     <td>{product.name}</td>
                     <td>{product.description}</td>
-                    <td>${parseFloat(product.price).toFixed(2)}</td>
+                    <td>{formatCOP(product.price)}</td>
                     <td>{product.stock}</td>
                     <td>{product.category.name}</td>
                     <td>
@@ -199,15 +222,16 @@ function Products() {
               </div>
 
               <div className="form-group">
-                <label>Precio *</label>
+                <label>Precio (COP) *</label>
                 <input
-                  type="number"
-                  step="0.01"
-                  min="0"
+                  type="text"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  onChange={(e) => {
+                    const formatted = formatInputCOP(e.target.value);
+                    setFormData({ ...formData, price: formatted });
+                  }}
                   required
-                  placeholder="0.00"
+                  placeholder="0"
                 />
               </div>
 

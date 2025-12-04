@@ -100,7 +100,6 @@ function Categories() {
                 <tr>
                   <th>ID</th>
                   <th>Nombre</th>
-                  <th>Fecha de Creación</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -109,7 +108,6 @@ function Categories() {
                   <tr key={category.id}>
                     <td>{category.id}</td>
                     <td>{category.name}</td>
-                    <td>{new Date(category.createdAt).toLocaleDateString()}</td>
                     <td>
                       <div className="actions">
                         <button className="btn btn-warning" onClick={() => handleEdit(category)}>
