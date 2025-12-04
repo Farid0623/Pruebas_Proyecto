@@ -47,8 +47,9 @@ test.describe('Sistema de Gestión de Inventario - Flujo E2E', () => {
     const productName = `Producto E2E ${Date.now()}`;
     await page.fill('input[placeholder="Ingrese el nombre del producto"]', productName);
     await page.fill('textarea', 'Descripción de prueba E2E');
-    // Campo de precio es type="text" con formato COP
-    await page.locator('label:has-text("Precio")').locator('..').locator('input[type="text"]').fill('99999');
+    // Campo de precio es type="text" con placeholder="0" (no confundir con stock)
+    const precioInput = page.locator('.form-group').filter({ hasText: 'Precio (COP)' }).locator('input');
+    await precioInput.fill('99999');
     await page.fill('input[type="number"][placeholder="0"]', '25');
     
     // Seleccionar la categoría recién creada
@@ -105,8 +106,9 @@ test.describe('Sistema de Gestión de Inventario - Flujo E2E', () => {
     const productName = `Producto Delete ${Date.now()}`;
     await page.fill('input[placeholder="Ingrese el nombre del producto"]', productName);
     await page.fill('textarea', 'Para eliminar');
-    // Campo de precio es type="text" con formato COP
-    await page.locator('label:has-text("Precio")').locator('..').locator('input[type="text"]').fill('50000');
+    // Campo de precio es type="text" con placeholder="0" (no confundir con stock)
+    const precioInput = page.locator('.form-group').filter({ hasText: 'Precio (COP)' }).locator('input');
+    await precioInput.fill('50000');
     await page.fill('input[type="number"][placeholder="0"]', '10');
     
     // Seleccionar primera categoría disponible
