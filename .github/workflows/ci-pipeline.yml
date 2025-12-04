@@ -33,9 +33,7 @@ jobs:
     
     - name: Ejecutar pruebas de integración
       working-directory: ./backend
-      run: mvn verify -DskipUnitTests
-      env:
-        SPRING_PROFILES_ACTIVE: test
+      run: mvn verify -DskipUnitTests -Dspring.profiles.active=test
     
     - name: Ejecutar Checkstyle
       working-directory: ./backend
