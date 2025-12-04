@@ -63,7 +63,8 @@ function Products() {
       const response = await categoryService.getAll();
       setCategories(response.data);
     } catch (err) {
-      console.error('Error al cargar categorías:', err);
+      // Error al cargar categorías
+      setError('Error al cargar categorías');
     }
   };
 
